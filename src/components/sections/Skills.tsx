@@ -1,3 +1,4 @@
+import { useMemo } from 'react'
 import { motion } from 'framer-motion'
 import { useRole } from '../../contexts/RoleContext'
 import { skillsByRole } from '../../data/skills'
@@ -16,10 +17,27 @@ const generateOffset = (seed: string | number): number => {
   return Math.abs(hash % 100)
 }
 
-export function Skills() {
+function SkillsComponent() {
   const { currentRole, theme } = useRole()
-  const skills = skillsByRole[currentRole]
+  
+  // Memoize skills to prevent recalculation on every render
+  const skills = useMemo(() => {
+    const roleSkills = skillsByRole[currentRole]
+    // Verify skills exist
+    if (!roleSkills || roleSkills.length === 0) {
+      console.error(`❌ No skills found for role: ${currentRole}`, {
+        availableRoles: Object.keys(skillsByRole),
+        currentRole,
+        roleSkills,
+        allSkills: skillsByRole
+      })
+    } else {
+      console.log(`✅ ${currentRole}: ${roleSkills.length} skills loaded`)
+    }
+    return roleSkills || []
+  }, [currentRole])
 
+  // Color function - simplified
   const getLevelColor = (level: string) => {
     switch (level) {
       case 'expert':
@@ -29,6 +47,21 @@ export function Skills() {
       default:
         return theme.accentColor
     }
+  }
+
+  if (!skills || skills.length === 0) {
+    return (
+      <section id="skills" className="relative py-24 md:py-32 lg:py-40 px-4 md:px-8 lg:px-16 min-h-screen flex items-center justify-center z-10">
+        <div className="max-w-7xl mx-auto w-full px-4 md:px-8 lg:px-16">
+          <div className="text-center">
+            <h2 className="text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight text-white">
+              Skills & Expertise
+            </h2>
+            <p className="text-base md:text-lg text-white/60 mt-4">No skills available for this role.</p>
+          </div>
+        </div>
+      </section>
+    )
   }
 
   return (
@@ -65,10 +98,11 @@ export function Skills() {
 
           {/* Skills Grid */}
           <motion.div
+            key={`skills-grid-${currentRole}`}
             variants={staggerContainer}
-            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8"
+            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 md:gap-8"
           >
-            {skills.map((skill, index) => (
+            {skills && skills.length > 0 && skills.map((skill, index) => (
               <motion.div
                 key={skill.name}
                 variants={fadeInUp}
@@ -124,4 +158,6 @@ export function Skills() {
   )
 }
 
-
+// Export component - memo removed since we use context (not props)
+// The useMemo hooks inside handle the optimization
+export const Skills = SkillsComponent

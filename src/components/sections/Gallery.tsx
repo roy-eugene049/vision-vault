@@ -1,5 +1,5 @@
+import { memo, useMemo, useState } from 'react'
 import { motion } from 'framer-motion'
-import { useState } from 'react'
 import { useRole } from '../../contexts/RoleContext'
 import { galleryItems, galleryCategories, GalleryCategory } from '../../data/gallery'
 import { GlassCard } from '../ui/GlassCard'
@@ -16,13 +16,16 @@ const generateOffset = (seed: string): number => {
   return Math.abs(hash % 100)
 }
 
-export function Gallery() {
+function GalleryComponent() {
   const { theme } = useRole()
   const [selectedCategory, setSelectedCategory] = useState<GalleryCategory>('all')
 
-  const filteredItems = selectedCategory === 'all' 
-    ? galleryItems 
-    : galleryItems.filter(item => item.category === selectedCategory)
+  // Memoize filtered items
+  const filteredItems = useMemo(() => {
+    return selectedCategory === 'all' 
+      ? galleryItems 
+      : galleryItems.filter(item => item.category === selectedCategory)
+  }, [selectedCategory])
 
   return (
     <section id="gallery" className="relative py-24 md:py-32 lg:py-40 px-4 md:px-8 lg:px-16 min-h-screen flex items-center justify-center z-10">
@@ -196,4 +199,7 @@ export function Gallery() {
     </section>
   )
 }
+
+// Export memoized component
+export const Gallery = memo(GalleryComponent)
 

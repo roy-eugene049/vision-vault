@@ -1,3 +1,4 @@
+import { useMemo } from 'react'
 import { motion } from 'framer-motion'
 import { ExternalLink } from 'lucide-react'
 import { useRole } from '../../contexts/RoleContext'
@@ -19,13 +20,63 @@ const generateOffset = (seed: string | number): number => {
   return Math.abs(hash % 100)
 }
 
-export function Projects() {
+function ProjectsComponent() {
   const { currentRole, theme } = useRole()
   
-  // Filter projects by current role
-  const filteredProjects = projects.filter(
-    (project) => project.role.includes(currentRole) && project.featured
-  )
+  // Memoize project filtering to prevent recalculation
+  const filteredProjects = useMemo(() => {
+    // Filter projects by current role - prioritize featured, but include all if needed
+    const featuredProjects = projects.filter(
+      (project) => project.role.includes(currentRole) && project.featured
+    )
+    
+    // Verify projects exist
+    if (featuredProjects.length === 0) {
+      const allRoleProjects = projects.filter((project) => project.role.includes(currentRole))
+      if (allRoleProjects.length === 0) {
+        console.error(`❌ No projects found for role: ${currentRole}`, {
+          currentRole,
+          allProjects: projects.length,
+          projectsWithRole: projects.filter(p => p.role.includes(currentRole))
+        })
+      } else {
+        console.warn(`⚠️ No featured projects for role: ${currentRole}, showing all ${allRoleProjects.length} projects`)
+      }
+    } else {
+      console.log(`✅ ${currentRole}: ${featuredProjects.length} featured projects loaded`)
+    }
+    
+    // If we have fewer than 3 featured projects, include non-featured ones
+    return featuredProjects.length >= 3
+      ? featuredProjects
+      : projects.filter((project) => project.role.includes(currentRole))
+  }, [currentRole])
+
+  // Memoize shuffled projects
+  const shuffledProjects = useMemo(() => {
+    // Shuffle projects for variety (using a seeded shuffle based on role)
+    return [...filteredProjects].sort((a, b) => {
+      const hashA = a.id.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0)
+      const hashB = b.id.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0)
+      return (hashA + currentRole.length) % 2 === 0 ? 1 : -1
+    })
+  }, [filteredProjects, currentRole])
+
+  if (filteredProjects.length === 0) {
+    return (
+      <section id="projects" className="relative py-24 md:py-32 lg:py-40 px-4 md:px-8 lg:px-16 min-h-screen flex items-center justify-center overflow-hidden z-10">
+        <Meteors number={20} />
+        <div className="max-w-7xl mx-auto w-full px-4 md:px-8 lg:px-16 relative z-10">
+          <div className="text-center">
+            <h2 className="text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight text-white">
+              Featured Projects
+            </h2>
+            <p className="text-base md:text-lg text-white/60 mt-4">No projects available for this role.</p>
+          </div>
+        </div>
+      </section>
+    )
+  }
 
   return (
     <section id="projects" className="relative py-24 md:py-32 lg:py-40 px-4 md:px-8 lg:px-16 min-h-screen flex items-center justify-center overflow-hidden z-10">
@@ -60,12 +111,21 @@ export function Projects() {
             </p>
           </motion.div>
 
-          {/* Projects Grid */}
+          {/* Projects Grid - Dynamic columns based on number of projects */}
           <motion.div
+            key={`projects-grid-${currentRole}`}
             variants={staggerContainer}
-            className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-10 lg:gap-12"
+            className={`grid gap-8 md:gap-10 lg:gap-12 ${
+              filteredProjects.length === 1
+                ? 'grid-cols-1 max-w-2xl mx-auto'
+                : filteredProjects.length === 2
+                ? 'grid-cols-1 md:grid-cols-2 max-w-5xl mx-auto'
+                : filteredProjects.length === 3
+                ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3'
+                : 'grid-cols-1 md:grid-cols-2'
+            }`}
           >
-            {filteredProjects.map((project, index) => (
+            {shuffledProjects && shuffledProjects.length > 0 && shuffledProjects.map((project, index) => (
               <motion.div
                 key={project.id}
                 variants={fadeInUp}
@@ -154,4 +214,6 @@ export function Projects() {
   )
 }
 
-
+// Export component - memo removed since we use context (not props)
+// The useMemo hooks inside handle the optimization
+export const Projects = ProjectsComponent
