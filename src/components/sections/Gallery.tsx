@@ -1,10 +1,11 @@
 import { memo, useMemo, useState } from 'react'
 import { motion } from 'framer-motion'
 import { useRole } from '../../contexts/RoleContext'
-import { galleryItems, galleryCategories, GalleryCategory } from '../../data/gallery'
+import { galleryItems, galleryCategories, GalleryCategory, GalleryItem } from '../../data/gallery'
 import { roles, RoleId } from '../../data/roles'
 import { GlassCard } from '../ui/GlassCard'
 import { BorderBeam } from '../ui/border-beam'
+import { GalleryModal } from '../ui/GalleryModal'
 import { fadeInUp, staggerContainer } from '../../utils/animations'
 
 // Generate consistent random offset
@@ -20,6 +21,8 @@ const generateOffset = (seed: string): number => {
 function GalleryComponent() {
   const { currentRole, theme, setCurrentRole } = useRole()
   const [selectedCategory, setSelectedCategory] = useState<GalleryCategory>('all')
+  const [selectedItem, setSelectedItem] = useState<GalleryItem | null>(null)
+  const [isModalOpen, setIsModalOpen] = useState(false)
 
   // Memoize filtered items by category and role
   const filteredItems = useMemo(() => {
@@ -150,22 +153,27 @@ function GalleryComponent() {
                 <motion.div
                   key={item.id}
                   variants={fadeInUp}
-                  className="relative w-full group"
+                  className="relative w-full group cursor-pointer"
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: index * 0.05, duration: 0.4 }}
                   whileHover={{ y: -8 }}
+                  onClick={() => {
+                    setSelectedItem(item)
+                    setIsModalOpen(true)
+                  }}
                 >
-                <GlassCard hover className="overflow-hidden p-0">
+                <GlassCard hover className="overflow-hidden p-0 relative">
                   <BorderBeam
                     colorFrom={theme.primaryColor}
                     colorTo={theme.accentColor}
                     duration={8}
                     initialOffset={generateOffset(item.id)}
+                    borderWidth={2}
                   />
-                  <div className="relative">
+                  <div className="relative p-3 md:p-4 h-full">
                     {/* Image */}
-                    <div className="relative w-full h-64 overflow-hidden bg-black/20">
+                    <div className="relative w-full h-64 overflow-hidden bg-black/20 rounded-xl mb-4">
                       <img
                         src={item.image}
                         alt={item.title}
@@ -179,8 +187,15 @@ function GalleryComponent() {
                       />
                       <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                       
+                      {/* Quick View Overlay */}
+                      <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-black/40">
+                        <div className="px-4 py-2 rounded-lg backdrop-blur-md border border-white/20">
+                          <p className="text-white text-sm font-medium">Click to view full size</p>
+                        </div>
+                      </div>
+                      
                       {/* Category Badge */}
-                      <div className="absolute top-4 left-4">
+                      <div className="absolute top-4 left-4 z-10">
                         <span
                           className="px-3 py-1 rounded-full text-xs font-medium"
                           style={{
@@ -196,7 +211,7 @@ function GalleryComponent() {
                     </div>
 
                     {/* Content */}
-                    <div className="p-6 space-y-3">
+                    <div className="p-4 md:p-5 space-y-3">
                       <h3 className="text-xl font-bold text-white">{item.title}</h3>
                       {item.description && (
                         <p className="text-sm text-white/70 leading-relaxed">{item.description}</p>
@@ -214,21 +229,6 @@ function GalleryComponent() {
                             </span>
                           ))}
                         </div>
-                      )}
-
-                      {/* Link */}
-                      {item.link && (
-                        <motion.a
-                          href={item.link}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="inline-flex items-center gap-2 text-sm font-semibold mt-4 group/link"
-                          style={{ color: theme.primaryColor }}
-                          whileHover={{ x: 6 }}
-                        >
-                          View Project
-                          <span className="group-hover/link:translate-x-1 transition-transform">→</span>
-                        </motion.a>
                       )}
                     </div>
                   </div>
@@ -298,6 +298,17 @@ function GalleryComponent() {
           </motion.div>
         </motion.div>
       </div>
+
+      {/* Gallery Modal */}
+      <GalleryModal
+        item={selectedItem}
+        isOpen={isModalOpen}
+        onClose={() => {
+          setIsModalOpen(false)
+          // Small delay before clearing item for smooth exit animation
+          setTimeout(() => setSelectedItem(null), 300)
+        }}
+      />
     </section>
   )
 }
