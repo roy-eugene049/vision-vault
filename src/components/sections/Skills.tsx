@@ -22,19 +22,7 @@ function SkillsComponent() {
   
   // Memoize skills to prevent recalculation on every render
   const skills = useMemo(() => {
-    const roleSkills = skillsByRole[currentRole]
-    // Verify skills exist
-    if (!roleSkills || roleSkills.length === 0) {
-      console.error(`❌ No skills found for role: ${currentRole}`, {
-        availableRoles: Object.keys(skillsByRole),
-        currentRole,
-        roleSkills,
-        allSkills: skillsByRole
-      })
-    } else {
-      console.log(`✅ ${currentRole}: ${roleSkills.length} skills loaded`)
-    }
-    return roleSkills || []
+    return skillsByRole[currentRole] || []
   }, [currentRole])
 
   // Color function - simplified

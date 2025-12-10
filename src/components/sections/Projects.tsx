@@ -30,22 +30,6 @@ function ProjectsComponent() {
       (project) => project.role.includes(currentRole) && project.featured
     )
     
-    // Verify projects exist
-    if (featuredProjects.length === 0) {
-      const allRoleProjects = projects.filter((project) => project.role.includes(currentRole))
-      if (allRoleProjects.length === 0) {
-        console.error(`❌ No projects found for role: ${currentRole}`, {
-          currentRole,
-          allProjects: projects.length,
-          projectsWithRole: projects.filter(p => p.role.includes(currentRole))
-        })
-      } else {
-        console.warn(`⚠️ No featured projects for role: ${currentRole}, showing all ${allRoleProjects.length} projects`)
-      }
-    } else {
-      console.log(`✅ ${currentRole}: ${featuredProjects.length} featured projects loaded`)
-    }
-    
     // If we have fewer than 3 featured projects, include non-featured ones
     return featuredProjects.length >= 3
       ? featuredProjects

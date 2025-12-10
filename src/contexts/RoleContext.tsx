@@ -27,16 +27,11 @@ export function RoleProvider({ children }: { children: ReactNode }) {
     document.documentElement.style.setProperty('--role-accent', theme.accentColor)
   }, [theme])
 
-  // Preload all role data on mount and verify
+  // Preload all role data on mount
   useEffect(() => {
     // Dynamically import and call preload function
     import('../utils/preloadData').then(({ preloadAllRoleData }) => {
       preloadAllRoleData()
-    })
-    
-    // Verify all role data on mount
-    import('../utils/verifyRoleData').then(({ logRoleVerification }) => {
-      logRoleVerification()
     })
   }, [])
 
