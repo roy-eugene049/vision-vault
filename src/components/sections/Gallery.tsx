@@ -17,15 +17,25 @@ const generateOffset = (seed: string): number => {
 }
 
 function GalleryComponent() {
-  const { theme } = useRole()
+  const { currentRole, theme } = useRole()
   const [selectedCategory, setSelectedCategory] = useState<GalleryCategory>('all')
 
-  // Memoize filtered items
+  // Memoize filtered items by category and role
   const filteredItems = useMemo(() => {
-    return selectedCategory === 'all' 
-      ? galleryItems 
-      : galleryItems.filter(item => item.category === selectedCategory)
-  }, [selectedCategory])
+    let items = galleryItems
+    
+    // Filter by role if specified (if no role specified, show for all roles)
+    items = items.filter(item => 
+      !item.role || item.role.length === 0 || item.role.includes(currentRole)
+    )
+    
+    // Filter by category
+    if (selectedCategory !== 'all') {
+      items = items.filter(item => item.category === selectedCategory)
+    }
+    
+    return items
+  }, [selectedCategory, currentRole])
 
   return (
     <section id="gallery" className="relative py-24 md:py-32 lg:py-40 px-4 md:px-8 lg:px-16 min-h-screen flex items-center justify-center z-10">
@@ -61,48 +71,69 @@ function GalleryComponent() {
 
           {/* Category Filter */}
           <motion.div variants={fadeInUp} className="flex flex-wrap justify-center gap-3 md:gap-4">
-            {galleryCategories.map((category) => (
-              <motion.button
-                key={category.id}
-                onClick={() => setSelectedCategory(category.id)}
-                className={`px-6 py-2.5 rounded-lg text-sm font-medium transition-all duration-300 ${
-                  selectedCategory === category.id
-                    ? 'bg-white/10 border border-white/20 text-white'
-                    : 'bg-white/[0.02] border border-white/10 text-white/70 hover:bg-white/[0.05] hover:text-white'
-                }`}
-                style={
-                  selectedCategory === category.id
-                    ? {
-                        borderColor: theme.primaryColor,
-                        backgroundColor: `${theme.primaryColor}15`,
-                        color: theme.primaryColor,
-                      }
-                    : {}
-                }
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-              >
-                {category.label}
-              </motion.button>
-            ))}
+            {galleryCategories.map((category) => {
+              // Count items in this category for current role
+              const categoryCount = galleryItems.filter(item => {
+                const roleMatch = !item.role || item.role.length === 0 || item.role.includes(currentRole)
+                const categoryMatch = category.id === 'all' ? true : item.category === category.id
+                return roleMatch && categoryMatch
+              }).length
+              
+              return (
+                <motion.button
+                  key={category.id}
+                  onClick={() => setSelectedCategory(category.id)}
+                  className={`px-6 py-2.5 rounded-lg text-sm font-medium transition-all duration-300 relative ${
+                    selectedCategory === category.id
+                      ? 'bg-white/10 border border-white/20 text-white'
+                      : 'bg-white/[0.02] border border-white/10 text-white/70 hover:bg-white/[0.05] hover:text-white'
+                  }`}
+                  style={
+                    selectedCategory === category.id
+                      ? {
+                          borderColor: theme.primaryColor,
+                          backgroundColor: `${theme.primaryColor}15`,
+                          color: theme.primaryColor,
+                        }
+                      : {}
+                  }
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  {category.label}
+                  {categoryCount > 0 && (
+                    <span className={`ml-2 px-1.5 py-0.5 rounded-full text-xs ${
+                      selectedCategory === category.id 
+                        ? 'bg-white/20' 
+                        : 'bg-white/10'
+                    }`}>
+                      {categoryCount}
+                    </span>
+                  )}
+                </motion.button>
+              )
+            })}
           </motion.div>
 
           {/* Gallery Grid */}
           <motion.div
+            key={`gallery-grid-${selectedCategory}-${currentRole}`}
             variants={staggerContainer}
             className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8"
-            key={selectedCategory}
+            initial="hidden"
+            animate="visible"
           >
-            {filteredItems.map((item, index) => (
-              <motion.div
-                key={item.id}
-                variants={fadeInUp}
-                className="relative w-full group"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.1 }}
-                whileHover={{ y: -8 }}
-              >
+            {filteredItems.length > 0 ? (
+              filteredItems.map((item, index) => (
+                <motion.div
+                  key={item.id}
+                  variants={fadeInUp}
+                  className="relative w-full group"
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: index * 0.05, duration: 0.4 }}
+                  whileHover={{ y: -8 }}
+                >
                 <GlassCard hover className="overflow-hidden p-0">
                   <BorderBeam
                     colorFrom={theme.primaryColor}
@@ -181,19 +212,19 @@ function GalleryComponent() {
                   </div>
                 </GlassCard>
               </motion.div>
-            ))}
+              ))
+            ) : (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="col-span-full text-center py-16"
+              >
+                <p className="text-white/60 text-lg">
+                  No items found in the <span className="text-white/80 font-medium">{galleryCategories.find(c => c.id === selectedCategory)?.label || selectedCategory}</span> category.
+                </p>
+              </motion.div>
+            )}
           </motion.div>
-
-          {/* Empty State */}
-          {filteredItems.length === 0 && (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              className="text-center py-16"
-            >
-              <p className="text-white/60 text-lg">No items found in this category.</p>
-            </motion.div>
-          )}
         </motion.div>
       </div>
     </section>
