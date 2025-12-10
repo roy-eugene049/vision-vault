@@ -2,6 +2,7 @@ import { memo, useMemo, useState } from 'react'
 import { motion } from 'framer-motion'
 import { useRole } from '../../contexts/RoleContext'
 import { galleryItems, galleryCategories, GalleryCategory } from '../../data/gallery'
+import { roles, RoleId } from '../../data/roles'
 import { GlassCard } from '../ui/GlassCard'
 import { BorderBeam } from '../ui/border-beam'
 import { fadeInUp, staggerContainer } from '../../utils/animations'
@@ -17,7 +18,7 @@ const generateOffset = (seed: string): number => {
 }
 
 function GalleryComponent() {
-  const { currentRole, theme } = useRole()
+  const { currentRole, theme, setCurrentRole } = useRole()
   const [selectedCategory, setSelectedCategory] = useState<GalleryCategory>('all')
 
   // Memoize filtered items by category and role
@@ -35,6 +36,27 @@ function GalleryComponent() {
     }
     
     return items
+  }, [selectedCategory, currentRole])
+
+  // Find which roles have items in the selected category
+  const rolesWithItems = useMemo(() => {
+    if (selectedCategory === 'all') return []
+    
+    const roles: RoleId[] = []
+    const categoryItems = galleryItems.filter(item => item.category === selectedCategory)
+    
+    // Check each role
+    const allRoles: RoleId[] = ['software-engineer', 'ui-ux-developer', 'full-stack-developer']
+    allRoles.forEach(role => {
+      const hasItems = categoryItems.some(item => 
+        !item.role || item.role.length === 0 || item.role.includes(role)
+      )
+      if (hasItems && role !== currentRole) {
+        roles.push(role)
+      }
+    })
+    
+    return roles
   }, [selectedCategory, currentRole])
 
   return (
@@ -217,11 +239,60 @@ function GalleryComponent() {
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="col-span-full text-center py-16"
+                className="col-span-full text-center py-16 space-y-6"
               >
-                <p className="text-white/60 text-lg">
-                  No items found in the <span className="text-white/80 font-medium">{galleryCategories.find(c => c.id === selectedCategory)?.label || selectedCategory}</span> category.
-                </p>
+                <div className="space-y-6 max-w-2xl mx-auto">
+                  <div className="space-y-3">
+                    <p className="text-white/70 text-lg leading-relaxed">
+                      No <span className="text-white/90 font-semibold">{galleryCategories.find(c => c.id === selectedCategory)?.label.toLowerCase() || selectedCategory}</span> designs are available for the <span className="text-white/90 font-semibold">{theme.name}</span> role.
+                    </p>
+                  </div>
+                  
+                  {rolesWithItems.length > 0 && (
+                    <div className="space-y-5 pt-4">
+                      <p className="text-white/60 text-base leading-relaxed">
+                        To view <span className="text-white/80 font-medium">{galleryCategories.find(c => c.id === selectedCategory)?.label.toLowerCase()}</span> designs, switch to the <span className="text-white/90 font-semibold">{roles[rolesWithItems[0]].name}</span> role.
+                      </p>
+                      <motion.button
+                        onClick={() => {
+                          setCurrentRole(rolesWithItems[0])
+                          // Scroll to top to see role switcher
+                          window.scrollTo({ top: 0, behavior: 'smooth' })
+                        }}
+                        className="inline-flex items-center gap-3 px-8 py-4 rounded-xl font-semibold text-base transition-all duration-300 shadow-lg"
+                        style={{
+                          backgroundColor: `${roles[rolesWithItems[0]].primaryColor}20`,
+                          color: roles[rolesWithItems[0]].primaryColor,
+                          border: `2px solid ${roles[rolesWithItems[0]].primaryColor}50`,
+                          boxShadow: `0 4px 20px ${roles[rolesWithItems[0]].primaryColor}30`,
+                        }}
+                        whileHover={{ 
+                          scale: 1.05,
+                          backgroundColor: `${roles[rolesWithItems[0]].primaryColor}30`,
+                          boxShadow: `0 6px 30px ${roles[rolesWithItems[0]].primaryColor}40`,
+                        }}
+                        whileTap={{ scale: 0.95 }}
+                      >
+                        <span>Switch to {roles[rolesWithItems[0]].name}</span>
+                        <motion.span 
+                          className="text-xl"
+                          animate={{ x: [0, 4, 0] }}
+                          transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
+                        >
+                          →
+                        </motion.span>
+                      </motion.button>
+                    </div>
+                  )}
+                  
+                  {rolesWithItems.length === 0 && (
+                    <div className="pt-4">
+                      <p className="text-white/50 text-sm italic">
+                        This category is currently empty. Check back soon for new additions!
+                      </p>
+                    </div>
+                  )}
+                </div>
               </motion.div>
             )}
           </motion.div>
