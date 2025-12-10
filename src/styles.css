@@ -191,6 +191,24 @@ button, a {
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
+/* Ensure gradient text and theme-dependent elements transition smoothly */
+h1, h2, h3, h4, h5, h6 {
+  transition: background 0.5s ease-out, filter 0.5s ease-out, color 0.5s ease-out;
+}
+
+/* Smooth transitions for elements using theme colors */
+[style*="background"] {
+  transition: background 0.5s ease-out;
+}
+
+[style*="color"] {
+  transition: color 0.5s ease-out;
+}
+
+[style*="borderColor"] {
+  transition: border-color 0.5s ease-out;
+}
+
 /* Custom scrollbar styling */
 ::-webkit-scrollbar {
   width: 8px;

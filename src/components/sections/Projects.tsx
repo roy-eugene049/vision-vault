@@ -40,7 +40,8 @@ export function Projects() {
         >
           {/* Section Header */}
           <motion.div variants={fadeInUp} className="text-center space-y-6">
-            <h2
+            <motion.h2
+              key={`projects-header-${theme.id}`}
               className="text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight text-white relative"
               style={{
                 background: `linear-gradient(135deg, #ffffff 0%, ${theme.primaryColor} 100%)`,
@@ -48,9 +49,12 @@ export function Projects() {
                 WebkitTextFillColor: 'transparent',
                 backgroundClip: 'text',
               }}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.5, ease: 'easeOut' }}
             >
               Featured Projects
-            </h2>
+            </motion.h2>
             <p className="text-base md:text-lg text-white/60 font-light leading-relaxed max-w-2xl mx-auto mt-4">
               Showcasing work as <span className="font-medium text-white/90">{theme.name}</span>
             </p>

@@ -16,8 +16,8 @@ export interface RoleTheme {
 export const roles: Record<RoleId, RoleTheme> = {
   'software-engineer': {
     id: 'software-engineer',
-    name: 'Software Engineer',
-    title: 'Software Engineer',
+    name: 'Frontend Engineer',
+    title: 'Frontend Engineer',
     subtitle: 'Frontend-Focused • React • Next.js • TypeScript',
     primaryColor: '#00d9ff', // Cyan
     secondaryColor: '#0099cc',

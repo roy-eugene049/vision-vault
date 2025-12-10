@@ -129,7 +129,23 @@ export const projects: Project[] = [
     description: 'Built responsive frontend interfaces with focus on user experience and accessibility standards.',
     role: ['software-engineer', 'ui-ux-developer'],
     technologies: ['React', 'TypeScript', 'TailwindCSS'],
-    featured: false,
+    featured: true,
+  },
+  {
+    id: 'ui-design-system',
+    title: 'Enterprise UI Design System',
+    description: 'Created a comprehensive design system with reusable components, design tokens, and documentation for consistent user interfaces across platforms.',
+    role: ['ui-ux-developer', 'software-engineer'],
+    technologies: ['Figma', 'Design Systems', 'Component Library', 'Design Tokens'],
+    featured: true,
+  },
+  {
+    id: 'mobile-app-design',
+    title: 'Mobile App UI/UX Design',
+    description: 'Designed intuitive mobile application interfaces with focus on user journey optimization and modern interaction patterns.',
+    role: ['ui-ux-developer'],
+    technologies: ['Figma', 'Mobile Design', 'Prototyping', 'User Research'],
+    featured: true,
   },
 ]
 

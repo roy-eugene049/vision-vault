@@ -30,6 +30,7 @@ export function About() {
           {/* Section Header */}
           <motion.div variants={fadeInUp} className="text-center space-y-6">
             <motion.h2
+              key={`about-header-${theme.id}`}
               className="text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight text-white relative"
               style={{
                 background: `linear-gradient(135deg, #ffffff 0%, ${theme.primaryColor} 100%)`,
@@ -37,6 +38,9 @@ export function About() {
                 WebkitTextFillColor: 'transparent',
                 backgroundClip: 'text',
               }}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.5, ease: 'easeOut' }}
             >
               About Roy Eugene
             </motion.h2>

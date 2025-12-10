@@ -36,7 +36,8 @@ export function Gallery() {
         >
           {/* Section Header */}
           <motion.div variants={fadeInUp} className="text-center space-y-6">
-            <h2
+            <motion.h2
+              key={`gallery-header-${theme.id}`}
               className="text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight text-white relative"
               style={{
                 background: `linear-gradient(135deg, #ffffff 0%, ${theme.primaryColor} 100%)`,
@@ -44,9 +45,12 @@ export function Gallery() {
                 WebkitTextFillColor: 'transparent',
                 backgroundClip: 'text',
               }}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.5, ease: 'easeOut' }}
             >
               Design Gallery
-            </h2>
+            </motion.h2>
             <p className="text-base md:text-lg text-white/60 font-light leading-relaxed max-w-2xl mx-auto mt-4">
               A collection of graphic design works, visual identities, and creative projects
             </p>

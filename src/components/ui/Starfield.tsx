@@ -71,9 +71,17 @@ export function Starfield() {
         const opacity = (1 - star.z / 2000) * 0.8
         const size = (1 - star.z / 2000) * 2
 
+        // Convert hex to rgba helper
+        const hexToRgba = (hex: string, alpha: number) => {
+          const r = parseInt(hex.slice(1, 3), 16)
+          const g = parseInt(hex.slice(3, 5), 16)
+          const b = parseInt(hex.slice(5, 7), 16)
+          return `rgba(${r}, ${g}, ${b}, ${alpha})`
+        }
+
         // Draw star trail
         if (star.prevX !== 0 && star.prevY !== 0) {
-          ctx.strokeStyle = `${theme.primaryColor}${Math.floor(opacity * 255).toString(16).padStart(2, '0')}`
+          ctx.strokeStyle = hexToRgba(theme.primaryColor, opacity)
           ctx.lineWidth = 1
           ctx.beginPath()
           ctx.moveTo(star.prevX, star.prevY)
@@ -82,7 +90,7 @@ export function Starfield() {
         }
 
         // Draw star
-        ctx.fillStyle = theme.primaryColor
+        ctx.fillStyle = hexToRgba(theme.primaryColor, opacity)
         ctx.globalAlpha = opacity
         ctx.beginPath()
         ctx.arc(star.x, star.y, size, 0, Math.PI * 2)
